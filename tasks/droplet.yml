@@ -1,0 +1,44 @@
+- name: deploy public key
+  digital_ocean:
+    state: present
+    command: ssh
+    name: "{{ app }}"
+    ssh_pub_key: "{{ ssh.pub_key }}"
+    client_id: "{{ digital_ocean.client_id }}"
+    api_key: "{{ digital_ocean.api_key }}"
+  register: deployed
+  tags: droplet
+
+- name: create droplet 512MB/Debian 7.0 x64/Singapore 1
+  digital_ocean:
+    state: present
+    command: droplet
+    name: "{{ app }}-{{ env }}"
+    ssh_key_ids: "{{ deployed.ssh_key.id }}"
+    client_id: "{{ digital_ocean.client_id }}"
+    api_key: "{{ digital_ocean.api_key }}"
+    size_id: "{{ droplet.size_id }}"
+    region_id: "{{ droplet.region_id }}"
+    image_id: "{{ droplet.image_id }}"
+    unique_name: "{{ droplet.unique_name }}"
+  register: created
+  tags: droplet
+
+- debug: msg="IP address is {{ created.droplet.ip_address }}"
+
+- name: add new droplet to inventory
+  add_host: name="{{ created.droplet.ip_address }}" groups="{{ env }}"
+  tags: droplet
+
+- name: update {{ env }} host
+  lineinfile:
+    dest: "{{ env }}"
+    regexp: '^(DROPLET_IP_ADDRESS|(\d+\.?){,4})'
+    line: "{{ created.droplet.ip_address }}"
+  when: created.changed
+  tags: droplet
+
+- name: waiting for opening port 22
+  wait_for: host="{{ created.droplet.ip_address }}" port=22 delay=5 timeout=300
+  when: created.changed
+  tags: droplet

@@ -1,0 +1,11 @@
+app: "example"
+
+digital_ocean:
+  client_id: "xxxxxxxxxx"
+  api_key: "xxxxxxxxxx"
+
+ruby_version: "2.1.3"
+
+rbenv:
+  bin_path: "/home/{{ user.name }}/.rbenv/bin"
+  gem_path: "/home/{{ user.name }}/.rbenv/shims/gem"

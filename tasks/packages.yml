@@ -1,0 +1,17 @@
+- name: update all packages
+  apt: upgrade=yes update_cache=yes
+  tags: packages
+
+- name: install packages
+  apt: name={{ item }}
+  with_items:
+    - git-core
+    - sysv-rc-conf
+    - imagemagick
+  tags: packages
+
+- name: change run-level
+  command: sysv-rc-conf {{ item }} off
+  with_items:
+    - exim4
+  tags: packages

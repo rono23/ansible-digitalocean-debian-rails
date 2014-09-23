@@ -1,0 +1,8 @@
+- name: restart sshd
+  shell: /etc/init.d/ssh restart
+
+- name: validate nginx
+  shell: nginx -t
+
+- name: restart nginx
+  service: name=nginx state=restarted enabled=yes

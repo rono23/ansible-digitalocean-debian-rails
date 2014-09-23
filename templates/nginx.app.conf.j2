@@ -1,0 +1,43 @@
+upstream {{ app }} {
+  server unix:{{ unicorn.socket }} fail_timeout=0;
+}
+
+server {
+  listen {{ nginx.listen }};
+  server_name {{ nginx.server_name }};
+  root {{ rails.current_path }}/public;
+
+  access_log /var/log/nginx/{{ app }}_access.log;
+  error_log /var/log/nginx/{{ app }}_error.log;
+
+  add_header X-XSS-Protection "1; mode=block";
+  add_header X-Frame-Options DENY;
+  add_header X-Content-Type-Options nosniff;
+
+  location / {
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header Host $http_host;
+      proxy_redirect off;
+      proxy_pass http://{{ app }};
+  }
+
+  location ~ ^/assets/ {
+    expires 1y;
+    add_header Cache-Control public;
+    add_header Etag "";
+    gzip_static {{ nginx.gzip_static }};
+    break;
+  }
+
+  location ~ ^/(images|javascripts|stylesheets|system)/  {
+    root {{ rails.current_path }}/public;
+    expires max;
+    break;
+  }
+
+  error_page 500 502 503 504 /500.html;
+
+  client_max_body_size {{ nginx.client_max_body_size }};
+  keepalive_timeout {{ nginx.keepalive_timeout }};
+}

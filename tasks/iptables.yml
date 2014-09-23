@@ -1,0 +1,17 @@
+- name: copy iptables configuration
+  template: src=templates/iptables.j2 dest=/etc/iptables.rules
+  register: iptables_copied
+  tags: iptables
+
+- name: restore iptables
+  shell: iptables-restore < /etc/iptables.rules
+  when: iptables_copied.changed == true
+  tags: iptables
+
+- name: install iptables-persistent
+  apt: pkg=iptables-persistent
+  tags: iptables
+
+- name: start iptables-persistent
+  service: name=iptables-persistent state=started enabled=yes
+  tags: iptables

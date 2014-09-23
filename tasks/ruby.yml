@@ -1,0 +1,60 @@
+- name: install packages for rbenv
+  apt: name={{ item }}
+  with_items:
+    - build-essential
+    - libssl-dev
+    - libcurl4-openssl-dev
+    - libreadline-dev
+  tags: ruby
+
+- name: clone rbenv etc from Github
+  sudo: no
+  git: repo={{ item.repo }} dest={{ item.dest }}
+  with_items:
+    - { repo: "https://github.com/sstephenson/rbenv.git", dest: "~/.rbenv"}
+    - { repo: "https://github.com/sstephenson/ruby-build.git", dest: "~/.rbenv/plugins/ruby-build"}
+    - { repo: "https://github.com/sstephenson/rbenv-gem-rehash.git", dest: "~/.rbenv/plugins/rbenv-gem-rehash"}
+  tags: ruby
+
+- name: check .bashrc for rbenv
+  sudo: no
+  shell: grep -r rbenv ~/.bashrc
+  register: bashrc_updated
+  ignore_errors: yes
+  tags: ruby
+
+- name: update .bashrc for rbenv
+  sudo: no
+  shell: echo 'eval "$(rbenv init -)"' >> ~/.bashrc &
+           echo 'export PATH="{{ rbenv.bin_path }}:$PATH"' >> ~/.bashrc
+  when: bashrc_updated|failed
+  tags: ruby
+
+- name: check ruby {{ ruby_version }} installed
+  sudo: no
+  shell: "{{ rbenv.bin_path }}/rbenv versions | grep {{ ruby_version }}"
+  register: ruby_installed
+  ignore_errors: yes
+  tags: ruby
+
+- name: install ruby {{ ruby_version }}
+  sudo: no
+  shell: "{{ rbenv.bin_path }}/rbenv install {{ ruby_version }}"
+  when: ruby_installed|failed
+  tags: ruby
+
+- name: set global ruby {{ ruby_version }}
+  sudo: no
+  shell: "{{ rbenv.bin_path }}/rbenv global {{ ruby_version }}"
+  when: ruby_installed|failed
+  tags: ruby
+
+- name: copy .gemrc
+  sudo: no
+  template: src=templates/gemrc dest=~/.gemrc
+  tags: ruby
+
+- name: install bundler
+  sudo: no
+  gem: name=bundler executable={{ rbenv.gem_path }} user_install=no
+  tags: ruby

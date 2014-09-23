@@ -1,0 +1,52 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: no
+  vars_files:
+    - vars.yml
+    - vars/{{ env }}.yml
+  vars:
+  tasks:
+    - include: tasks/droplet.yml
+
+- hosts: "{{ env }}"
+  remote_user: root
+  gather_facts: no
+  vars_files:
+    - vars.yml
+    - vars/{{ env }}.yml
+  tasks:
+    - include: tasks/packages.yml
+    - include: tasks/ssh.yml
+    - include: tasks/user.yml
+    - include: tasks/iptables.yml
+  handlers:
+    - include: handlers.yml
+
+- hosts: "{{ env }}"
+  remote_user: "{{ user.name }}"
+  port: "{{ ssh.port }}"
+  gather_facts: no
+  sudo: yes
+  vars_files:
+    - vars.yml
+    - vars/{{ env }}.yml
+  tasks:
+    - include: tasks/postgresql.yml
+    - include: tasks/nginx.yml
+    - include: tasks/unicorn.yml
+    - include: tasks/ruby.yml
+  handlers:
+    - include: handlers.yml
+
+- hosts: "{{ env }}"
+  remote_user: "{{ user.name }}"
+  port: "{{ ssh.port }}"
+  gather_facts: no
+  vars_files:
+    - vars.yml
+    - vars/{{ env }}.yml
+  tasks:
+    - include: tasks/deploy-setup.yml
+  handlers:
+    - include: handlers.yml

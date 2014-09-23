@@ -1,0 +1,14 @@
+- name: check unicorn
+  stat: path=/etc/init.d/unicorn
+  tags: unicorn
+
+- name: copy unicorn configuration
+  template:
+    src: templates/unicorn.sh.j2
+    dest: /etc/init.d/unicorn
+    mode: 0755
+  tags: unicorn
+
+- name: exec insserv unicorn
+  shell: insserv -d unicorn
+  tags: unicorn

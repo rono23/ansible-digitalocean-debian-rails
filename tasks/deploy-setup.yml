@@ -1,0 +1,19 @@
+- name: send private key to remote deploy user
+  copy: src={{ ssh.deploy_user_private_key }} dest=~/.ssh/id_rsa mode=600
+  tags: deploy-setup
+
+- name: assure {{ rails.shared_path }}/config exists
+  file: path={{ rails.shared_path }}/config state=directory
+  tags: deploy-setup
+
+- name: copy database configuration
+  template: src=templates/database.yml.j2 dest={{ rails.shared_path }}/config/database.yml
+  tags: deploy-setup
+
+- name: copy unicorn configuration
+  template: src=templates/unicorn.rb.j2 dest={{ rails.shared_path }}/config/unicorn.rb
+  tags: deploy-setup
+
+- name: copy rails secrets configuration
+  template: src=templates/secrets.yml.j2 dest={{ rails.shared_path }}/config/secrets.yml
+  tags: deploy-setup

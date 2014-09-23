@@ -1,0 +1,28 @@
+- name: add PostgreSQL repository
+  apt_repository: repo="{{ postgresql.repository }}"
+  tags: postgresql
+
+- name: add repository key
+  apt_key: url="{{ postgresql.apt_key }}"
+  tags: postgresql
+
+- name: install PostgreSQL
+  apt: pkg={{ item }} update-cache=yes
+  with_items:
+    - postgresql-{{ postgresql.version }}
+    - postgresql-server-dev-{{ postgresql. version }}
+    - python-psycopg2 # Python PostgreSQL database adapter for Ansible
+  tags: postgresql
+
+- name: create database user
+  sudo_user: postgres
+  postgresql_user:
+    name: "{{ database.user }}"
+    password: "{{ database.password }}"
+    role_attr_flags: "{{ database.role_attr_flags }}"
+  tags: postgresql
+
+- name: create database
+  sudo_user: postgres
+  postgresql_db: name={{ database.name }} owner={{ database.user }}
+  tags: postgresql

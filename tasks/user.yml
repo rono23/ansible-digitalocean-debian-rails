@@ -1,0 +1,11 @@
+- name: change root password
+  user: name=root password="{{ root.password }}"
+  tags: user
+
+- name: add {{ user.name}} as a user
+  user: name="{{ user.name }}" group="{{ user.group }}" password="{{ user.password }}" shell=/bin/bash
+  tags: user
+
+- name: add authorized_key for {{ user.name }}
+  authorized_key: user="{{ user.name }}" key="{{ ssh.pub_key }}"
+  tags: user

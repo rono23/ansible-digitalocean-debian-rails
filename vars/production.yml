@@ -1,0 +1,73 @@
+# Copied from vars/staging.yml
+
+droplet:
+  name: "{{ app }}-{{ env }}"
+  size_id: 66
+  region_id: 6
+  image_id: 5562742
+  unique_name: "yes"
+
+root:
+  password: "$6$hfNiPrMj2xM8m8EY$Aqi1DDQRqhrBBE05vKPrV8uZPbCooPfmm8A2DjJZ7213G2yjGvz3iGTcty5EGex/Xzh/CDFKbsp2JxQGd5fpi1"
+
+user:
+  name: "deployer"
+  password: "$6$hfNiPrMj2xM8m8EY$Aqi1DDQRqhrBBE05vKPrV8uZPbCooPfmm8A2DjJZ7213G2yjGvz3iGTcty5EGex/Xzh/CDFKbsp2JxQGd5fpi1"
+  group: "sudo"
+
+ssh:
+  port: 10022
+  pub_key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+  permit_root_login: "no"
+  password_authentication: "no"
+  deploy_user_private_key: "~/.ssh/{{ app }}_{{ user.name }}"
+
+nginx:
+  user: "nginx"
+  repository: "deb http://nginx.org/packages/debian/ wheezy nginx"
+  apt_key: "http://nginx.org/keys/nginx_signing.key"
+  worker_processes: "auto"
+  worker_rlimit_nofile: 4096
+  worker_connections: 1024
+  multi_accept: "off"
+  sendfile: "on"
+  tcp_nopush: "off"
+  gzip: "on"
+  server_tokens: "off"
+  listen: 80
+  server_name: "{{ env }}.{{ app }}.com"
+  gzip_static: "on"
+  client_max_body_size: "100m"
+  keepalive_timeout: 10
+
+postgresql:
+ version: 9.3
+ repository: "deb http://apt.postgresql.org/pub/repos/apt/ wheezy-pgdg main"
+ apt_key: "https://www.postgresql.org/media/keys/ACCC4CF8.asc"
+
+database:
+  name: "{{ app }}_{{ env }}"
+  user: "{{ app }}"
+  password: "password"
+  host: "localhost"
+  pool: 5
+  role_attr_flags: "NOSUPERUSER"
+
+rails:
+  app_path: "/home/{{ user.name }}/{{ app }}"
+  current_path: "/home/{{ user.name }}/{{ app }}/current"
+  shared_path: "/home/{{ user.name }}/{{ app }}/shared"
+  secrets:
+    secret_key_base: "43c34b2fbb24cf51c971304410d226c615ea2d8a36fd82e65b4d789cad7a4d6caad3f69ff799d284b38475f36f5d996395e07af932c217711b878c0954b85654"
+
+unicorn:
+  worker_processes: 1
+  timeout: 30
+  preload_app: "true"
+  user: "{{ user.name }}"
+  socket: "{{ rails.shared_path }}/tmp/sockets/{{ app }}.unicorn.sock"
+  pid: "{{ rails.shared_path }}/tmp/pids/unicorn.pid"
+  old_pid: "{{ rails.shared_path }}/tmp/pids/unicorn.pid.oldbin"
+  stderr_path: "{{ rails.current_path }}/log/unicorn.stderr.log"
+  stdout_path: "{{ rails.current_path }}/log/unicorn.stdout.log"
+  tag: "[unicorn]"
