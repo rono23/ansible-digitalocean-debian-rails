@@ -35,6 +35,7 @@ nginx:
   gzip: "on"
   server_tokens: "off"
   listen: 80
+  ssl_listen: 443
   server_name: "{{ env }}.{{ app }}.com"
   gzip_static: "on"
   client_max_body_size: "100m"

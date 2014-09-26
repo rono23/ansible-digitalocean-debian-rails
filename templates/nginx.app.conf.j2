@@ -10,14 +10,11 @@ server {
   access_log /var/log/nginx/{{ app }}_access.log;
   error_log /var/log/nginx/{{ app }}_error.log;
 
-  add_header X-XSS-Protection "1; mode=block";
-  add_header X-Frame-Options DENY;
-  add_header X-Content-Type-Options nosniff;
-
   location / {
       proxy_set_header X-Real-IP $remote_addr;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
       proxy_set_header Host $http_host;
+      proxy_set_header X-Forwarded-Proto $scheme;
       proxy_redirect off;
       proxy_pass http://{{ app }};
   }
