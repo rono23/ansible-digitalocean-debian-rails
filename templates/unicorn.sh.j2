@@ -27,7 +27,7 @@ start() {
 
 stop() {
     su $USER -c "kill -TERM $(cat {{ unicorn.pid }})"
-    sleep 2
+    sleep 1
     if [[ ! -f {{ unicorn.pid }} ]]; then
         logger -sit "{{ unicorn.tag }}" "Server stoped"
     else
@@ -36,21 +36,16 @@ stop() {
     fi
 }
 
-reload() {
+restart() {
     logger -sit "{{ unicorn.tag }}" "Trying to reload server"
     kill -USR2 $(cat {{ unicorn.pid }})
-    sleep 2
+    sleep 1
     if [[ -f {{ unicorn.old_pid }} ]]; then
         logger -sit "{{ unicorn.tag }}" "Server reloaded"
     else
         logger -sit "{{ unicorn.tag }}" "FAILED to reload server"
         exit 1
     fi
-}
-
-restart() {
-    logger -sit "{{ unicorn.tag }}" "Restarting server"
-    kill -HUP $(cat {{ unicorn.pid }})
 }
 
 case "$1" in
@@ -60,11 +55,8 @@ case "$1" in
     stop)
         stop
         ;;
-    restart)
+    restart|reload)
         restart
-        ;;
-    reload)
-        reload
         ;;
     *)
     echo $"Usage: $0 {start|stop|restart|reload}"
