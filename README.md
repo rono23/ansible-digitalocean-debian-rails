@@ -3,6 +3,7 @@ This is an Ansible playbook to setup Nginx, PostgreSQL, Unicorn etc for Ruby on 
 Please be aware this playbook is not idempotent.
 
 ## Setup
+[![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/rono23/ansible-digitalocean-debian-rails?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ```
 $ sudo easy_install pip
